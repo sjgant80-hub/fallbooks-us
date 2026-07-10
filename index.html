@@ -235,22 +235,19 @@ tr.soon{background:rgba(255,140,0,0.07)}
     'llama-3b':  { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',   size: '~2GB',   label: '3B · balanced · default · most laptops' },
     'qwen-7b':   { id: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',     size: '~5GB',   label: '7B · capable · needs decent GPU (M-series Mac / 8GB+ VRAM)' },
     'llama-8b':  { id: 'Llama-3.1-8B-Instruct-q4f16_1-MLC',   size: '~5GB',   label: '8B · common · needs decent GPU' },
-    'llama-70b': { id: 'Llama-3.1-70B-Instruct-q4f16_1-MLC',  size: '~40GB',  label: '70B · frontier · needs serious GPU + 64GB+ RAM' },
-  };
+    'llama-70b': { id: 'Llama-3.1-70B-Instruct-q4f16_1-MLC',  size: '~40GB',  label: '70B · frontier · needs serious GPU + 64GB+ RAM' }};
   const DEFAULT_MODEL = 'llama-3b';
 
   const T3_PROVIDERS = {
     anthropic: { label: 'Anthropic Claude', models: ['claude-sonnet-4-5','claude-opus-4-7','claude-haiku-4-5'], default: 'claude-sonnet-4-5', url: 'https://api.anthropic.com/v1/messages' },
     openai:    { label: 'OpenAI',           models: ['gpt-4o','gpt-4o-mini','o1-mini'],                          default: 'gpt-4o-mini',      url: 'https://api.openai.com/v1/chat/completions' },
-    google:    { label: 'Google Gemini',    models: ['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash-exp'], default: 'gemini-1.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' },
-  };
+    google:    { label: 'Google Gemini',    models: ['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash-exp'], default: 'gemini-1.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' }};
 
   // ─── State ───────────────────────────────────────────────────────
   const STATE = {
     config: loadConfig(),
     ai: { ready: false, loading: false, progress: 0, engine: null, model: null },
-    mesh: { active: false, peers: new Map(), bc: null, signal: null },
-  };
+    mesh: { active: false, peers: new Map(), bc: null, signal: null }};
 
   function loadConfig() {
     try { return JSON.parse(localStorage.getItem('fall-kit.config') || '{}'); }
@@ -317,8 +314,7 @@ tr.soon{background:rgba(255,140,0,0.07)}
     if (tier === 'T2' && STATE.ai.ready && STATE.ai.engine) {
       const r = await STATE.ai.engine.chat.completions.create({
         messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
-        max_tokens: maxTokens,
-      });
+        max_tokens: maxTokens});
       return r.choices[0].message.content;
     }
     if (tier === 'T3' && STATE.config.api_key && STATE.config.api_provider) {
@@ -335,8 +331,7 @@ tr.soon{background:rgba(255,140,0,0.07)}
       const r = await fetch(T3_PROVIDERS.anthropic.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: maxTokens, system: sys, messages: [{ role: 'user', content: msg }] }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens, system: sys, messages: [{ role: 'user', content: msg }] })});
       if (!r.ok) throw new Error('Anthropic ' + r.status + ': ' + (await r.text()).slice(0, 200));
       const j = await r.json();
       return j.content[0].text;
@@ -345,8 +340,7 @@ tr.soon{background:rgba(255,140,0,0.07)}
       const r = await fetch(T3_PROVIDERS.openai.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + key },
-        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'system', content: sys }, { role: 'user', content: msg }] }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'system', content: sys }, { role: 'user', content: msg }] })});
       if (!r.ok) throw new Error('OpenAI ' + r.status);
       const j = await r.json();
       return j.choices[0].message.content;
@@ -355,8 +349,7 @@ tr.soon{background:rgba(255,140,0,0.07)}
       const r = await fetch(T3_PROVIDERS.google.url + model + ':generateContent?key=' + encodeURIComponent(key), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: sys + '\n\n---\n\n' + msg }] }], generationConfig: { maxOutputTokens: maxTokens } }),
-      });
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: sys + '\n\n---\n\n' + msg }] }], generationConfig: { maxOutputTokens: maxTokens } })});
       if (!r.ok) throw new Error('Google ' + r.status);
       const j = await r.json();
       return j.candidates[0].content.parts[0].text;
@@ -597,8 +590,7 @@ tr.soon{background:rgba(255,140,0,0.07)}
     openMint: openMint,  // v1.2 · launch kcc-mint with this seed prefilled as parent
     MODELS: WEBLLM_MODELS,
     PROVIDERS: T3_PROVIDERS,
-    state: STATE,
-  };
+    state: STATE};
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -678,8 +670,7 @@ const RULES={
  // sales tax
  vatStandardRate:0.20, vatReducedRate:0.05, vatThresholdReg:90000, vatThresholdDereg:88000,
  // Delaware SoS late filing penalties (private Ltd)
- chPenaltyPrivate:[{maxDays:30,fee:150},{maxDays:90,fee:375},{maxDays:180,fee:750},{maxDays:99999,fee:1500}],
-};
+ chPenaltyPrivate:[{maxDays:30,fee:150},{maxDays:90,fee:375},{maxDays:180,fee:750},{maxDays:99999,fee:1500}]};
 
 // sales tax Flat Rate sector percentages (subset of the 55 categories)
 const sales tax_FLAT_RATE={
@@ -698,8 +689,7 @@ const sales tax_FLAT_RATE={
  'retail-not-listed':7.5, 'retail-vehicles':6.5,
  'secretarial':13, 'social-work':11, 'sport-recreation':8.5, 'transport-storage':10,
  'travel-agency':10.5, 'veterinary':11, 'wholesale-agricultural':8, 'wholesale-food':7.5,
- 'wholesale-not-listed':8.5,
-};
+ 'wholesale-not-listed':8.5};
 
 // US Chart of Accounts (SA + CT generic)
 const CHART_OF_ACCOUNTS={
@@ -710,13 +700,11 @@ const CHART_OF_ACCOUNTS={
  {code:'4003',name:'Sales · reverse charge',vat:'reverse'},
  {code:'4100',name:'Services rendered',vat:'standard'},
  {code:'4200',name:'Other income',vat:'standard'},
- {code:'4900',name:'Bank interest received',vat:'outside'},
- ],
+ {code:'4900',name:'Bank interest received',vat:'outside'}],
  costOfSales:[
  {code:'5000',name:'Materials',vat:'standard'},
  {code:'5100',name:'Subcontractors',vat:'standard'},
- {code:'5200',name:'CIS subcontractors',vat:'reverse-cis'},
- ],
+ {code:'5200',name:'CIS subcontractors',vat:'reverse-cis'}],
  expenses:[
  {code:'6000',name:'Wages & salaries',vat:'outside'},
  {code:'6001',name:'Employer NI',vat:'outside'},
@@ -739,8 +727,7 @@ const CHART_OF_ACCOUNTS={
  {code:'6900',name:'Sundry expenses',vat:'standard'},
  {code:'7000',name:'Depreciation',vat:'outside'},
  {code:'7100',name:'Director loan interest',vat:'outside'},
- {code:'7200',name:'R&D qualifying spend',vat:'standard'},
- ],
+ {code:'7200',name:'R&D qualifying spend',vat:'standard'}],
  assets:[
  {code:'1000',name:'Bank · current',vat:'outside'},
  {code:'1001',name:'Bank · savings',vat:'outside'},
@@ -749,17 +736,14 @@ const CHART_OF_ACCOUNTS={
  {code:'1200',name:'Stock',vat:'outside'},
  {code:'1300',name:'Fixed assets · plant',vat:'standard'},
  {code:'1301',name:'Fixed assets · IT',vat:'standard'},
- {code:'1302',name:'Fixed assets · vehicles',vat:'standard'},
- ],
+ {code:'1302',name:'Fixed assets · vehicles',vat:'standard'}],
  liabilities:[
  {code:'2100',name:'Trade creditors',vat:'outside'},
  {code:'2200',name:'sales tax control',vat:'outside'},
  {code:'2210',name:'W-2 payroll / NI control',vat:'outside'},
  {code:'2220',name:'CT payable',vat:'outside'},
  {code:'2300',name:'Director loan account',vat:'outside'},
- {code:'2400',name:'Dividends declared',vat:'outside'},
- ],
-};
+ {code:'2400',name:'Dividends declared',vat:'outside'}]};
 
 // T0 auto-classify keyword router for transaction descriptions
 const AUTO_CLASSIFY=[
@@ -783,8 +767,7 @@ const AUTO_CLASSIFY=[
  [/\b(dividend)\b/i,'2400'],
  [/\b(corporation tax|hmrc.*ct)\b/i,'2220'],
  [/\b(vat)\b/i,'2200'],
- [/\b(director.*loan|dla)\b/i,'2300'],
-];
+ [/\b(director.*loan|dla)\b/i,'2300']];
 
 function autoClassify(desc){
  const d=String(desc||'');
@@ -814,8 +797,7 @@ const TABS=[
  {id:'ct',name:'CT',ico:'C'},
  {id:'payroll',name:'Payroll',ico:'⌬'},
  {id:'qa',name:'Q & A',ico:'?'},
- {id:'practice',name:'Practice',ico:'⌂'},
-];
+ {id:'practice',name:'Practice',ico:'⌂'}];
 
 let state={
  active:'dashboard',
@@ -834,11 +816,9 @@ let state={
  settings:{
  anthropicKey:'', geminiKey:'', openaiKey:'',
  auditChain:true,
- currentAdviserId:'',
- },
+ currentAdviserId:''},
  filters:{q:'',entityType:'',service:'',overdueOnly:false,adviserId:''},
- chat:[],
-};
+ chat:[]};
 
 // ── util ──
 const $=(s,p=document)=>p.querySelector(s);
@@ -1037,8 +1017,7 @@ function newBlankClient(entityType){
  notes:[],
  adviserId,
  // for sole traders only
- soleTraderIncome:{turnover:0,expenses:0,otherIncome:0,salaryW-2 payroll:0,dividends:0,savings:0},
- };
+ soleTraderIncome:{turnover:0,expenses:0,otherIncome:0,salaryW-2 payroll:0,dividends:0,savings:0}};
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1076,7 +1055,7 @@ function nationalInsuranceEmployee(income){
  return{ni,mainAmount:main,upperAmount:upper};
 }
 function nationalInsuranceEmployer(grossPay){
- // Class 1 secondary 15% over $5,000 threshold (2025-26)
+ // Class 1 secondary 15% over TBA threshold (2025-26)
  const liable=Math.max(0,grossPay-RULES.niEmployerThreshold);
  return liable*RULES.niEmployerRate;
 }
@@ -1163,8 +1142,7 @@ function computeSA(client,opts){
  employeeNI:niEmp.ni,
  savingsAllowance:savingsAllow,savingsTaxFree,
  totalDue:total,
- computedAt:now(),
- };
+ computedAt:now()};
 }
 
 // Form 1120 summary for a Ltd (marginal relief 19-25%)
@@ -1248,7 +1226,7 @@ function computesales tax(client,periodStart,periodEnd,opts){
  const ratePct=sales tax_FLAT_RATE[client.vatFlatRateSector]||16.5;
  const grossSales=box6+box1; // sales tax-inclusive turnover
  box1=grossSales*(ratePct/100);
- box4=0; // can only reclaim input on capital assets >$2k under FRS
+ box4=0; // can only reclaim input on capital assets >TBAk under FRS
  }
  const box3=box1; // EU acquisitions box 2 = 0 unless NI
  const box5=box3-box4;
@@ -1260,8 +1238,7 @@ function computesales tax(client,periodStart,periodEnd,opts){
  6:Math.round(box6),7:Math.round(box7),8:0,9:0
  },
  transactions:txs.length,
- computedAt:now(),
- };
+ computedAt:now()};
 }
 
 // 1099-K-shaped JSON output
@@ -1278,8 +1255,7 @@ function vatReturn1099-K(vatReturn,vatNumber){
  totalValuePurchasesExsales tax:vatReturn.boxes[7],
  totalValueGoodsSuppliedExsales tax:vatReturn.boxes[8],
  totalAcquisitionsExsales tax:vatReturn.boxes[9],
- finalised:true,
- };
+ finalised:true};
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1407,8 +1383,7 @@ function computePayrollPeriod(client,periodStart,periodEnd,opts){
  fpsRef:'FPS-'+isoDate(periodEnd).replace(/-/g,'')+'-'+(Math.random().toString(36).slice(2,6).toUpperCase()),
  epsRef:'EPS-'+isoDate(periodEnd).slice(0,7).replace(/-/g,''),
  status:'draft',
- computedAt:now(),
- };
+ computedAt:now()};
  for(const e of employees){
  const annualSalary=+e.annualSalary||0;
  const periodGross=annualSalary/periodsPerYear*monthsInPeriod;
@@ -1458,29 +1433,27 @@ function generateP60(client,employeeId,taxYear){
  return{
  form:'P60',taxYear,employer:client.entityName||clientName(client),employerPayeRef:client.payeReference,
  employee:{name:emp.name,nino:emp.nino,taxCode:emp.taxCode||'1257L'},
- totals,issuedAt:now(),
- };
+ totals,issuedAt:now()};
 }
 
 // ════════════════════════════════════════════════════════════════
 // T0 KNOWLEDGE BASE · 14 deterministic rules
 // ════════════════════════════════════════════════════════════════
 const T0_RULES=[
- {q:/Schedule C|self.?assessment.*deadline|when.*SA/i,a:'**Schedule C deadlines** — Paper return: 31 October following end of tax year. Online: 31 January following end of tax year. Tax payment also due 31 January. Payments on account (50% each) due 31 January and 31 July. Late filing: $100 fixed penalty after deadline, then daily $10 (max $900), then 5% or $300 (whichever greater) at 6 months and again 12 months.'},
- {q:/Form 1120|corporation tax.*deadline|when.*CT/i,a:'**Form 1120 / Federal income tax** — Return due 12 months after accounting period end. Tax payment due 9 months and 1 day after period end (or quarterly instalments for large/very large companies). Late filing penalty: $100 (1 day), $200 (3 months), 10% of unpaid tax (18 months), 20% (12 months). For accounting periods ending after 1 April 2023, rates are 19% (≤$50k), marginal relief $50k–$250k, 25% (>$250k).'},
- {q:/sales tax.*1099-K|making tax digital|1099-K/i,a:'**1099-K for sales tax** — Mandatory for all sales tax-registered businesses since April 2022. Requires (a) digital records, (b) digital links between software, (c) returns submitted via API-compatible software. Records must be retained 6 years. From April 2026, 1099-K for ITSA starts for sole traders/landlords with qualifying income >$50k, then >$30k from 2027.'},
+ {q:/Schedule C|self.?assessment.*deadline|when.*SA/i,a:'**Schedule C deadlines** — Paper return: 31 October following end of tax year. Online: 31 January following end of tax year. Tax payment also due 31 January. Payments on account (50% each) due 31 January and 31 July. Late filing: TBA fixed penalty after deadline, then daily TBA (max TBA), then 5% or TBA (whichever greater) at 6 months and again 12 months.'},
+ {q:/Form 1120|corporation tax.*deadline|when.*CT/i,a:'**Form 1120 / Federal income tax** — Return due 12 months after accounting period end. Tax payment due 9 months and 1 day after period end (or quarterly instalments for large/very large companies). Late filing penalty: TBA (1 day), TBA (3 months), 10% of unpaid tax (18 months), 20% (12 months). For accounting periods ending after 1 April 2023, rates are 19% (≤TBAk), marginal relief TBAk–TBAk, 25% (>TBAk).'},
+ {q:/sales tax.*1099-K|making tax digital|1099-K/i,a:'**1099-K for sales tax** — Mandatory for all sales tax-registered businesses since April 2022. Requires (a) digital records, (b) digital links between software, (c) returns submitted via API-compatible software. Records must be retained 6 years. From April 2026, 1099-K for ITSA starts for sole traders/landlords with qualifying income >TBAk, then >TBAk from 2027.'},
  {q:/P60|when.*P60|payslip end of year/i,a:'**P60** — Annual end-of-year certificate showing total pay and deductions for each employee. Must be issued by 31 May following end of tax year (5 April). One per employee still employed on 5 April.'},
  {q:/P11D|benefits in kind|when.*P11D/i,a:'**P11D** — Reports benefits in kind (BIK) for employees and directors. Due 6 July following the tax year. Class 1A FICA on benefits payable by 22 July (electronic) / 19 July (post). Payrolled benefits can be reported via FPS instead, but P11D(b) Class 1A return still required.'},
  {q:/R.?D|research.*development|SME.*credit/i,a:'**R&D tax relief (post-1 April 2024)** — Two schemes: (1) **Merged RDEC** — 20% above-the-line credit (taxable, net ≈15-16.2%) for all companies. (2) **ERIS (Enhanced R&D Intensive Support)** — for loss-making SMEs where qualifying R&D ≥30% of total expenditure: 86% uplift + 14.5% surrender = up to 27% effective rate. Pre-notification required within 6 months of period end for new claimants. W-2 payroll/FICA cap applies.'},
- {q:/flat rate|sales tax.*sector|FRS/i,a:'**sales tax Flat Rate Scheme** — For businesses with sales tax-exclusive turnover ≤$150k. You pay a flat % of gross (sales tax-inclusive) turnover instead of standard sales tax calculation. Sector rates range 4% (retail food) to 16.5% (limited cost trader). 1% discount in first year of sales tax registration. Cannot reclaim input sales tax except on capital assets >$2,000. Must leave at gross turnover $230k.'},
+ {q:/flat rate|sales tax.*sector|FRS/i,a:'**sales tax Flat Rate Scheme** — For businesses with sales tax-exclusive turnover ≤TBAk. You pay a flat % of gross (sales tax-inclusive) turnover instead of standard sales tax calculation. Sector rates range 4% (retail food) to 16.5% (limited cost trader). 1% discount in first year of sales tax registration. Cannot reclaim input sales tax except on capital assets >TBA. Must leave at gross turnover TBAk.'},
  {q:/W-2 payroll.*RTI|FPS|real.?time/i,a:'**W-2 payroll RTI · FPS vs EPS** — **FPS** (Full Payment Submission) sent on or before every payday with employee pay/deduction details. **EPS** (Employer Payment Summary) sent monthly to claim reductions (statutory pay reclaim, Employment Allowance, CIS deductions, apprenticeship levy). **P32** is the monthly summary you remit to IRS by 22nd (electronic) of following month.'},
- {q:/companies house.*penalty|late filing.*accounts/i,a:'**Delaware SoS late filing penalty (private Ltd)** — Up to 1 month late: $150. 1-3 months: $375. 3-6 months: $750. >6 months: $1,500. Doubled if late in two consecutive years. Public companies: $750/$1,500/$3,000/$7,500. Note: this is separate from Form 1120 late-filing penalty (which goes to IRS).'},
- {q:/marginal relief|small profits.*CT/i,a:'**CT marginal relief (FY 2023+)** — Profits ≤$50k: 19% small profits rate. Profits ≥$250k: 25% main rate. Between $50k–$250k: marginal relief tapers between the two. Formula: F × (U − A) × N/A, where F = 3/200, U = upper limit ($250k), A = augmented profits, N = taxable profits. Limits prorated for associated companies and short accounting periods.'},
- {q:/director.?s loan|DLA|s.455|loan.*director/i,a:'**Director\'s loan (DLA)** — If overdrawn at year end and not repaid within 9 months 1 day, company pays **s.455 tax** at 33.75% of overdrawn balance (matches dividend higher rate). Refundable when loan is repaid (4 years to wait). Loans >$10k = benefit in kind reportable on P11D (IRS official rate, 2.25% for 2024-25). Bed-and-breakfasting anti-avoidance: 30-day rule + $15k rule applies.'},
- {q:/reverse charge.*construction|CIS reverse|DRC/i,a:'**Domestic Reverse Charge (CIS)** — Since 1 March 2021, sales tax-registered subcontractors don\'t charge sales tax to sales tax-registered contractor customers. Instead, contractor self-accounts (output + input both, net effect $0). Applies to most construction services where (a) both parties sales tax-registered, (b) supply within CIS, (c) recipient is not end-user. Invoice must state "Reverse charge: customer to account for sales tax".'},
+ {q:/companies house.*penalty|late filing.*accounts/i,a:'**Delaware SoS late filing penalty (private Ltd)** — Up to 1 month late: TBA. 1-3 months: TBA. 3-6 months: TBA. >6 months: TBA. Doubled if late in two consecutive years. Public companies: TBA/TBA/TBA/TBA. Note: this is separate from Form 1120 late-filing penalty (which goes to IRS).'},
+ {q:/marginal relief|small profits.*CT/i,a:'**CT marginal relief (FY 2023+)** — Profits ≤TBAk: 19% small profits rate. Profits ≥TBAk: 25% main rate. Between TBAk–TBAk: marginal relief tapers between the two. Formula: F × (U − A) × N/A, where F = 3/200, U = upper limit (TBAk), A = augmented profits, N = taxable profits. Limits prorated for associated companies and short accounting periods.'},
+ {q:/director.?s loan|DLA|s.455|loan.*director/i,a:'**Director\'s loan (DLA)** — If overdrawn at year end and not repaid within 9 months 1 day, company pays **s.455 tax** at 33.75% of overdrawn balance (matches dividend higher rate). Refundable when loan is repaid (4 years to wait). Loans >TBAk = benefit in kind reportable on P11D (IRS official rate, 2.25% for 2024-25). Bed-and-breakfasting anti-avoidance: 30-day rule + TBAk rule applies.'},
+ {q:/reverse charge.*construction|CIS reverse|DRC/i,a:'**Domestic Reverse Charge (CIS)** — Since 1 March 2021, sales tax-registered subcontractors don\'t charge sales tax to sales tax-registered contractor customers. Instead, contractor self-accounts (output + input both, net effect TBA). Applies to most construction services where (a) both parties sales tax-registered, (b) supply within CIS, (c) recipient is not end-user. Invoice must state "Reverse charge: customer to account for sales tax".'},
  {q:/PSC|persons.*significant.*control|beneficial owner/i,a:'**PSC register** — Companies must keep a register of Persons with Significant Control. A PSC: (a) owns >25% shares, (b) >25% voting rights, (c) right to appoint/remove majority of board, (d) significant influence/control, (e) trust/firm with above. Changes filed via PSC01-09 forms within 14 days. Public on Delaware SoS. Annual confirmation via CS01.'},
- {q:/confirmation statement|CS01|accounts.*difference/i,a:'**CS01 vs annual accounts** — **CS01 (confirmation statement)** confirms registered details (registered office, SIC code, shareholders, PSCs) are up to date. Due annually by anniversary of incorporation (+14 days), $34 online/$62 paper. **Annual accounts** are statutory financial statements due 9 months after year end (private), filed at Delaware SoS and (via Form 1120) at IRS.'},
-];
+ {q:/confirmation statement|CS01|accounts.*difference/i,a:'**CS01 vs annual accounts** — **CS01 (confirmation statement)** confirms registered details (registered office, SIC code, shareholders, PSCs) are up to date. Due annually by anniversary of incorporation (+14 days), TBA online/TBA paper. **Annual accounts** are statutory financial statements due 9 months after year end (private), filed at Delaware SoS and (via Form 1120) at IRS.'}];
 
 function answerT0(query){
  const q=String(query||'').trim();
@@ -1495,7 +1468,7 @@ function answerT0(query){
  if(ds.length)return{found:true,answer:'Next deadlines for **'+clientName(c)+'**:\n'+ds.map(d=>'• '+d.label+' — '+fmtDate(d.dueAt)+' ('+deadlineStatus(d)+')').join('\n'),source:'T0·computed'};
  }
  if(/CT.*on (\d+)|corporation tax.*$?(\d+)/i.test(q)){
- const m=q.match(/(\d{3,})/);if(m){const p=+m[1];const r=computeCT(p);return{found:true,answer:'CT on $'+fmt(p)+' = **'+moneyP(r.tax)+'** ('+r.note+'). Effective rate '+pct(r.effectiveRate)+'.',source:'T0·computed'};}
+ const m=q.match(/(\d{3})/);if(m){const p=+m[1];const r=computeCT(p);return{found:true,answer:'CT on $'+fmt(p)+' = **'+moneyP(r.tax)+'** ('+r.note+'). Effective rate '+pct(r.effectiveRate)+'.',source:'T0·computed'};}
  }
  return{found:false,answer:'No T0 rule matched. Try: "When is Schedule C due?", "Form 1120 deadline?", "sales tax 1099-K compliance?", "R&D SME post-2024?", "sales tax flat-rate sectors?", "W-2 payroll RTI vs FPS?", "Delaware SoS late filing penalty?", "Marginal relief CT?", "Director\'s loan tax?", "Reverse charge sales tax construction?", "PSC rules?", "Confirmation statement vs accounts?". Or connect a T3 BYOK key in Settings.'};
 }
@@ -2280,8 +2253,7 @@ async function seedDemoData(){
  c.accountingPeriodStart=isoDate(ps);c.accountingPeriodEnd=isoDate(pe);c.yearEnd=c.accountingPeriodEnd.slice(5);
  c.employees=[
  {id:'em_demo1',name:'Marcus Osei (director)',nino:'AB123456C',taxCode:'1257L',annualSalary:12570,pensionPct:0,studentLoan:false},
- {id:'em_demo2',name:'Aisha Reeve (admin)',nino:'CD234567E',taxCode:'1257L',annualSalary:28000,pensionPct:0.05,studentLoan:false},
- ];
+ {id:'em_demo2',name:'Aisha Reeve (admin)',nino:'CD234567E',taxCode:'1257L',annualSalary:28000,pensionPct:0.05,studentLoan:false}];
  c.adviserId=state.settings.currentAdviserId;
  state.clients.push(c);
  // demo transactions
@@ -2301,8 +2273,7 @@ async function seedDemoData(){
  {date:isoDate(addMonths(today,-2)),payee:'GitHub Enterprise',accountCode:'6301',amount:-160,vatRate:0.20},
  {date:isoDate(addMonths(today,-2)),payee:'Sales · Bond Wealth Ltd',accountCode:'4100',amount:8400,vatRate:0.20},
  {date:isoDate(addMonths(today,-1)),payee:'Google Ads',accountCode:'6500',amount:-220,vatRate:0.20},
- {date:isoDate(addMonths(today,-1)),payee:'Sales · final tranche · ',accountCode:'4100',amount:7800,vatRate:0.20},
- ];
+ {date:isoDate(addMonths(today,-1)),payee:'Sales · final tranche · ',accountCode:'4100',amount:7800,vatRate:0.20}];
  for(const t of txList){const tx={id:'tx_'+uid(),clientId:c.id,...t,vatScheme:'standard',reconciled:true,createdAt:now()};state.transactions.push(tx);await persistTx(tx)}
  c.deadlines=generateDeadlinesForClient(c);
  await persistClient(c,'demo client seeded');
