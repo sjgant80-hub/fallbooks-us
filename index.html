@@ -673,7 +673,7 @@ const RULES={
  chPenaltyPrivate:[{maxDays:30,fee:150},{maxDays:90,fee:375},{maxDays:180,fee:750},{maxDays:99999,fee:1500}]};
 
 // sales tax Flat Rate sector percentages (subset of the 55 categories)
-const sales tax_FLAT_RATE={
+const VAT_FLAT_RATE={
  'accountancy':14.5, 'advertising':11, 'agricultural':11, 'architect':14.5,
  'boarding':10.5, 'business-services':12, 'catering':12.5, 'computer-it':14.5,
  'consultancy':14, 'construction-labour-only':14.5, 'construction-supply-materials':9.5,
@@ -1017,7 +1017,7 @@ function newBlankClient(entityType){
  notes:[],
  adviserId,
  // for sole traders only
- soleTraderIncome:{turnover:0,expenses:0,otherIncome:0,salaryW-2 payroll:0,dividends:0,savings:0}};
+ soleTraderIncome:{turnover:0,expenses:0,otherIncome:0,salaryPAYE:0,dividends:0,savings:0}};
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1115,10 +1115,10 @@ function savingsAllowance(income){
 // Schedule C summary for a sole trader / director
 function computeSA(client,opts){
  opts=opts||{};
- const sti=client.soleTraderIncome||{turnover:0,expenses:0,otherIncome:0,salaryW-2 payroll:0,dividends:0,savings:0};
+ const sti=client.soleTraderIncome||{turnover:0,expenses:0,otherIncome:0,salaryPAYE:0,dividends:0,savings:0};
  // SE profit
  const seProfit=Math.max(0,(+sti.turnover||0)-(+sti.expenses||0));
- const salary=(+sti.salaryW-2 payroll||0);
+ const salary=(+sti.salaryPAYE||0);
  const dividends=(+sti.dividends||0);
  const otherIncome=(+sti.otherIncome||0);
  const savings=(+sti.savings||0);
@@ -1186,7 +1186,7 @@ function computeRD(qualifyingExpenditure,opts){
 }
 
 // sales tax computation
-function computesales tax(client,periodStart,periodEnd,opts){
+function computeVAT(client,periodStart,periodEnd,opts){
  opts=opts||{};
  const txs=state.transactions.filter(t=>t.clientId===client.id&&t.date>=periodStart&&t.date<=periodEnd);
  // sales tax boxes (IRS):
@@ -1223,7 +1223,7 @@ function computesales tax(client,periodStart,periodEnd,opts){
  }
  // Flat rate adjustment
  if(client.vatScheme==='flat-rate'&&client.vatFlatRateSector){
- const ratePct=sales tax_FLAT_RATE[client.vatFlatRateSector]||16.5;
+ const ratePct=VAT_FLAT_RATE[client.vatFlatRateSector]||16.5;
  const grossSales=box6+box1; // sales tax-inclusive turnover
  box1=grossSales*(ratePct/100);
  box4=0; // can only reclaim input on capital assets >TBAk under FRS
@@ -1242,7 +1242,7 @@ function computesales tax(client,periodStart,periodEnd,opts){
 }
 
 // 1099-K-shaped JSON output
-function vatReturn1099-K(vatReturn,vatNumber){
+function vatReturnMTD(vatReturn,vatNumber){
  return{
  periodKey:'#'+isoDate(vatReturn.periodEnd).slice(2,4)+'A'+Math.ceil((new Date(vatReturn.periodEnd).getMonth()+1)/3),
  vrn:vatNumber||'',
@@ -1251,10 +1251,10 @@ function vatReturn1099-K(vatReturn,vatNumber){
  totalVatDue:vatReturn.boxes[3],
  vatReclaimedCurrPeriod:vatReturn.boxes[4],
  netVatDue:Math.abs(vatReturn.boxes[5]),
- totalValueSalesExsales tax:vatReturn.boxes[6],
- totalValuePurchasesExsales tax:vatReturn.boxes[7],
- totalValueGoodsSuppliedExsales tax:vatReturn.boxes[8],
- totalAcquisitionsExsales tax:vatReturn.boxes[9],
+ totalValueSalesExVAT:vatReturn.boxes[6],
+ totalValuePurchasesExVAT:vatReturn.boxes[7],
+ totalValueGoodsSuppliedExVAT:vatReturn.boxes[8],
+ totalAcquisitionsExVAT:vatReturn.boxes[9],
  finalised:true};
 }
 
@@ -1467,7 +1467,7 @@ function answerT0(query){
  const ds=(c.deadlines||[]).filter(d=>d.status!=='submitted').slice(0,3);
  if(ds.length)return{found:true,answer:'Next deadlines for **'+clientName(c)+'**:\n'+ds.map(d=>'• '+d.label+' — '+fmtDate(d.dueAt)+' ('+deadlineStatus(d)+')').join('\n'),source:'T0·computed'};
  }
- if(/CT.*on (\d+)|corporation tax.*$?(\d+)/i.test(q)){
+ if(/CT.*on (\d+)|corporation tax.*\$?(\d+)/i.test(q)){
  const m=q.match(/(\d{3})/);if(m){const p=+m[1];const r=computeCT(p);return{found:true,answer:'CT on $'+fmt(p)+' = **'+moneyP(r.tax)+'** ('+r.note+'). Effective rate '+pct(r.effectiveRate)+'.',source:'T0·computed'};}
  }
  return{found:false,answer:'No T0 rule matched. Try: "When is Schedule C due?", "Form 1120 deadline?", "sales tax 1099-K compliance?", "R&D SME post-2024?", "sales tax flat-rate sectors?", "W-2 payroll RTI vs FPS?", "Delaware SoS late filing penalty?", "Marginal relief CT?", "Director\'s loan tax?", "Reverse charge sales tax construction?", "PSC rules?", "Confirmation statement vs accounts?". Or connect a T3 BYOK key in Settings.'};
@@ -1601,7 +1601,7 @@ function renderMain(){
  else if(a==='clients')renderClients(m);
  else if(a==='deadlines')renderDeadlines(m);
  else if(a==='books')renderBooks(m);
- else if(a==='vat')rendersales tax(m);
+ else if(a==='vat')renderVAT(m);
  else if(a==='sa')renderSA(m);
  else if(a==='ct')renderCT(m);
  else if(a==='payroll')renderPayroll(m);
@@ -1680,7 +1680,7 @@ function renderClientSub(){
  else if(s==='transactions')root.innerHTML=clientTransactions(c);
  else if(s==='sa')root.innerHTML=clientSA(c);
  else if(s==='ct')root.innerHTML=clientCT(c);
- else if(s==='vat')root.innerHTML=clientsales tax(c);
+ else if(s==='vat')root.innerHTML=clientVAT(c);
  else if(s==='payroll')root.innerHTML=clientPayroll(c);
  else if(s==='deadlines')root.innerHTML=clientDeadlines(c);
  else if(s==='documents')root.innerHTML=clientDocuments(c);
@@ -1749,7 +1749,7 @@ function clientIdentity(c){
  ${['none','standard','flat-rate','cash','annual','margin'].map(s=>`<option value="${s}"${c.vatScheme===s?' selected':''}>${s}</option>`).join('')}
  </select></div>
  <div class="field"><label>Flat-rate sector</label><select id="i_vfs">
- <option value="">—</option>${Object.keys(sales tax_FLAT_RATE).map(k=>`<option value="${k}"${c.vatFlatRateSector===k?' selected':''}>${k} (${sales tax_FLAT_RATE[k]}%)</option>`).join('')}
+ <option value="">—</option>${Object.keys(VAT_FLAT_RATE).map(k=>`<option value="${k}"${c.vatFlatRateSector===k?' selected':''}>${k} (${VAT_FLAT_RATE[k]}%)</option>`).join('')}
  </select></div>
  <div class="field"><label>W-2 payroll reference</label><input id="i_paye" value="${esc(c.payeReference)}"></div>
  </div>
@@ -1855,7 +1855,7 @@ function clientSA(c){
  <div class="row r3">
  <div class="field"><label>Turnover $</label><input id="sa_t" type="number" value="${sti.turnover||0}" onchange="setSTI('${c.id}','turnover',+this.value)"></div>
  <div class="field"><label>SE expenses $</label><input id="sa_e" type="number" value="${sti.expenses||0}" onchange="setSTI('${c.id}','expenses',+this.value)"></div>
- <div class="field"><label>Salary (W-2 payroll) $</label><input id="sa_s" type="number" value="${sti.salaryW-2 payroll||0}" onchange="setSTI('${c.id}','salaryW-2 payroll',+this.value)"></div>
+ <div class="field"><label>Salary (W-2 payroll) $</label><input id="sa_s" type="number" value="${sti.salaryPAYE||0}" onchange="setSTI('${c.id}','salaryPAYE',+this.value)"></div>
  </div>
  <div class="row r3">
  <div class="field"><label>Dividends $</label><input id="sa_d" type="number" value="${sti.dividends||0}" onchange="setSTI('${c.id}','dividends',+this.value)"></div>
@@ -1909,7 +1909,7 @@ function computeRDClaim(id){const q=+$('#rd_qual').value||0;const intensive=$('#
 async function recordCT(id){const c=state.clients.find(x=>x.id===id);if(!c)return;const txs=state.transactions.filter(t=>t.clientId===id&&t.date>=c.accountingPeriodStart&&t.date<=c.accountingPeriodEnd);let income=0,expenses=0;for(const t of txs){const a=findAccount(t.accountCode);if(!a)continue;if(a.section==='income')income+=Math.abs(+t.amount||0);if(a.section==='expenses'||a.section==='costOfSales')expenses+=Math.abs(+t.amount||0)}const ct=computeCT(income-expenses);const r={id:'ct_'+uid(),clientId:id,periodStart:c.accountingPeriodStart,periodEnd:c.accountingPeriodEnd,summary:{income,expenses,...ct},status:'draft',createdAt:now()};state.ctReturns.push(r);await persistCt(r);await audit('ct.computed','',{id:r.id,clientId:id,tax:ct.tax});broadcast('submission.recorded',{kind:'CT',clientId:id,returnId:r.id});toast('CT recorded')}
 function downloadCT(id){const c=state.clients.find(x=>x.id===id);if(!c)return;const txs=state.transactions.filter(t=>t.clientId===id&&t.date>=c.accountingPeriodStart&&t.date<=c.accountingPeriodEnd);let income=0,expenses=0;for(const t of txs){const a=findAccount(t.accountCode);if(!a)continue;if(a.section==='income')income+=Math.abs(+t.amount||0);if(a.section==='expenses'||a.section==='costOfSales')expenses+=Math.abs(+t.amount||0)}const ct=computeCT(income-expenses);downloadFile('Form 1120-'+id+'.json',JSON.stringify({clientId:id,period:[c.accountingPeriodStart,c.accountingPeriodEnd],income,expenses,...ct},null,2),'application/json')}
 
-function clientsales tax(c){
+function clientVAT(c){
  if(!c.vatScheme||c.vatScheme==='none')return '<div class="card"><div class="empty-state">sales tax module — set a sales tax scheme on the Identity tab.</div></div>';
  const dls=(c.deadlines||[]).filter(d=>d.kind==='sales tax100').slice(0,4);
  return `<div class="card"><h3>sales tax · ${c.vatScheme} · ${esc(c.vatNumber||'no VRN')}</h3>
@@ -1917,10 +1917,10 @@ function clientsales tax(c){
  <div id="vatResult" style="margin-top:14px"></div>
  </div>`;
 }
-function computesales taxPeriod(id,ps,pe){
+function computeVATPeriod(id,ps,pe){
  const c=state.clients.find(x=>x.id===id);if(!c)return;
  if(!ps||!pe){toast('No period set');return}
- const v=computesales tax(c,ps,pe);
+ const v=computeVAT(c,ps,pe);
  const mtd=vatReturn1099-K(v,c.vatNumber);
  $('#vatResult').innerHTML=`<div class="card"><h3>sales tax100 result · ${ps} → ${pe}</h3>
  ${[1,2,3,4,5,6,7,8,9].map(b=>`<div class="kpi"><span class="l">Box ${b}</span><span class="v ${b===5?'brass':''}">${moneyP(v.boxes[b])}</span></div>`).join('')}
@@ -1928,8 +1928,8 @@ function computesales taxPeriod(id,ps,pe){
  <button class="btn sm" onclick='downloadsales tax(${JSON.stringify({return:v,mtd}).replace(/'/g,"&apos;")})'>Export 1099-K JSON</button></div>
  </div>`;
 }
-async function recordsales tax(v){const r=Object.assign({id:'vat_'+uid(),status:'draft',createdAt:now()},v);state.vatReturns.push(r);await persistVat(r);await audit('vat.computed',v.periodStart+'→'+v.periodEnd,{id:r.id,clientId:v.clientId});broadcast('submission.recorded',{kind:'sales tax',clientId:v.clientId,returnId:r.id});toast('sales tax return recorded')}
-function downloadsales tax(o){downloadFile('sales tax100-'+o.return.clientId+'-'+o.return.periodEnd+'.json',JSON.stringify(o,null,2),'application/json')}
+async function recordVAT(v){const r=Object.assign({id:'vat_'+uid(),status:'draft',createdAt:now()},v);state.vatReturns.push(r);await persistVat(r);await audit('vat.computed',v.periodStart+'→'+v.periodEnd,{id:r.id,clientId:v.clientId});broadcast('submission.recorded',{kind:'sales tax',clientId:v.clientId,returnId:r.id});toast('sales tax return recorded')}
+function downloadVAT(o){downloadFile('VAT100-'+o.return.clientId+'-'+o.return.periodEnd+'.json',JSON.stringify(o,null,2),'application/json')}
 
 function clientPayroll(c){
  if(!(c.servicesEngaged||[]).includes('payroll'))return '<div class="card"><div class="empty-state">Payroll — enable "payroll" service on the Services tab.</div></div>';
@@ -2003,7 +2003,7 @@ function renderBooks(m){
 }
 
 // ── sales tax master ──
-function rendersales tax(m){
+function renderVAT(m){
  const vatClients=state.clients.filter(c=>!c.archivedAt&&c.vatScheme&&c.vatScheme!=='none');
  m.innerHTML+=`<div class="section-h"><h2>sales tax · ${vatClients.length} registered clients</h2></div>
  <div class="card"><table><thead><tr><th>Client</th><th>VRN</th><th>Scheme</th><th>Next return due</th></tr></thead><tbody>
@@ -2292,7 +2292,7 @@ async function boot(){
  $('#layout').innerHTML='<div style="padding:30px;color:var(--red)">Boot error · '+esc(e.message)+'</div>';
  }
 }
-window.FALLBOOKS={state,RULES,computeSA,computeCT,computesales tax,computeRD,computePayrollPeriod,generateDeadlinesForClient,answerT0,T0_RULES,VERSION,PRIME,TOOLNAME};
+window.FALLBOOKS={state,RULES,computeSA,computeCT,computeVAT,computeRD,computePayrollPeriod,generateDeadlinesForClient,answerT0,T0_RULES,VERSION,PRIME,TOOLNAME};
 boot();
 </script>
 
