@@ -1921,7 +1921,7 @@ function clientVAT(c){
  if(!c.vatScheme||c.vatScheme==='none')return '<div class="card"><div class="empty-state">sales tax module — set a sales tax scheme on the Identity tab.</div></div>';
  const dls=(c.deadlines||[]).filter(d=>d.kind==='sales tax100').slice(0,4);
  return `<div class="card"><h3>sales tax · ${c.vatScheme} · ${esc(c.vatNumber||'no VRN')}</h3>
- ${dls.length?'<table><thead><tr><th>Period</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>'+dls.map(d=>`<tr><td>${esc(d.periodStart||'')} → ${esc(d.periodEnd||'')}</td><td>${fmtDate(d.dueAt)}</td><td>${d.status||deadlineStatus(d)}</td><td><button class="btn sm" onclick="computesales taxPeriod('${c.id}','${d.periodStart||''}','${d.periodEnd||''}')">Compute</button></td></tr>`).join('')+'</tbody></table>':'<div class="empty-state">No sales tax periods. Click "Refresh deadlines" on the client header.</div>'}
+ ${dls.length?'<table><thead><tr><th>Period</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>'+dls.map(d=>`<tr><td>${esc(d.periodStart||'')} → ${esc(d.periodEnd||'')}</td><td>${fmtDate(d.dueAt)}</td><td>${d.status||deadlineStatus(d)}</td><td><button class="btn sm" onclick="computeVATPeriod('${c.id}','${d.periodStart||''}','${d.periodEnd||''}')">Compute</button></td></tr>`).join('')+'</tbody></table>':'<div class="empty-state">No sales tax periods. Click "Refresh deadlines" on the client header.</div>'}
  <div id="vatResult" style="margin-top:14px"></div>
  </div>`;
 }
